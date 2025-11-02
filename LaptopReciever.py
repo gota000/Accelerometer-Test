@@ -8,6 +8,9 @@ import numpy as np
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(('172.20.10.2', 5005))
 
+# Buffer for incomplete data
+buffer = ""
+
 # Create figure with 3D visualization
 fig = plt.figure(figsize=(12, 10))
 
@@ -66,10 +69,28 @@ def rotation_matrix(pitch, roll):
     return Ry @ Rx
 
 def update(frame):
+    global buffer
     try:
-        data = s.recv(1024).decode().strip()
-        if data:
-            pitch, roll = map(float, data.split(','))
+        # Receive data and add to buffer
+        new_data = s.recv(1024).decode()
+        buffer += new_data
+        
+        # Process complete lines only
+        if '\n' in buffer:
+            lines = buffer.split('\n')
+            # Keep incomplete line in buffer
+            buffer = lines[-1]
+            # Process the last complete line (most recent data)
+            complete_line = lines[-2] if len(lines) > 1 else lines[0]
+            
+            if complete_line.strip():
+                values = complete_line.strip().split(',')
+                if len(values) >= 2:
+                    pitch, roll = map(float, values[:2])
+                else:
+                    return []
+            else:
+                return []
             
             # Clear 3D plot
             ax1.cla()
