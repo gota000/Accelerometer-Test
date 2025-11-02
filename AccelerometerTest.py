@@ -11,6 +11,7 @@ BMA250_REG_DATA_X_LSB = 0x02
 
 s = socket.socket(socket.AF_INET,
                   socket.SOCK_STREAM)  # creates a new socket to communicate and it is ipv4 and TCP (more reliable than UDP)
+s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Allow reuse of address if the address is still in use
 s.bind(('0.0.0.0',
         5005))  # binds to address and port, 0.0.0.0 means listen to all interfaces and both client and server have to connect to 5005
 s.listen(1)  # the server waits for one connection
